@@ -3,58 +3,68 @@
 const express = require("express");
 const app = express();
 app.use(express.json());
-const port = 1601;
+const port = 2601;
 
 //states
 let counter = 0;
-let users = [];
+let todos = [];
 
 //getting todos
 app.get("/", function (req, res) {
   res.json({
-    todos: users,
-    numberOfTodos: users.length,
+    todos: todos,
+    numberOfTodos: todos.length,
   });
 });
 
 //posting request to add todos
 app.post("/", function (req, res) {
-  const list = req.body.list;
+  const { todoTitle } = req.body;
+  console.log("Request Body:", req.body);
+
+  if (!todoTitle) {
+    res.json({
+      msg: `provide a todoTitle that needs to be added`,
+      todos,
+    });
+    return;
+  }
+
   counter++;
-  users.push({
+  todos.push({
     id: counter,
-    title: list,
+    title: todoTitle,
   });
   res.json({
-    msg: "added one todo",
-    users,
+    msg: `added one todo of title ${todoTitle}`,
+    todos,
   });
 });
 
 //sending a put request we will make sure that a task is completed or not
 app.put("/", function (req, res) {
-  if (users.length === 0) {
+  if (todos.length === 0) {
     res.json({
       error: "nothing to change",
     });
   } else {
     const { id, completed } = req.body;
-    const todoid = users.find((updatedtodo) => updatedtodo.id === id);
-    if (!todoid) {
+    const updatedId = todos.find((updatedtodo) => updatedtodo.id === id);
+    if (!updatedId) {
       res.json({
-        error: "you havent enterd correct id",
+        error: "you havent enterd correct id", //the user havent provided the correct id for updation
       });
     }
 
-    todoid.completed = completed;
+    updatedId.completed = completed;
 
-    res.json({ message: "updated successfully", users });
+    res.json({ message: "updated successfully", todos });
   }
 });
 
 //deleting todos
 app.delete("/", function (req, res) {
-  if (users.length === 0) {
+  if (todos.length === 0) {
     return res.json({
       msg: "Nothing to delete, the list is empty",
     });
@@ -65,16 +75,16 @@ app.delete("/", function (req, res) {
 
   // Case 1: No ID provided — delete last user
   if (!specificIdforDel) {
-    const removedUser = users.pop(); // remove last item
+    const removedUser = todos.pop(); // remove last item
     return res.json({
       msg: "Deleted last user",
       removed: removedUser,
-      users,
+      todos,
     });
   }
 
   // Case 2: ID provided — handle specific delete
-  const index = users.findIndex((user) => user.id === specificIdforDel);
+  const index = todos.findIndex((user) => user.id === specificIdforDel);
 
   if (index === -1) {
     return res.json({
@@ -82,12 +92,12 @@ app.delete("/", function (req, res) {
     });
   }
 
-  const deletedUser = users.splice(index, 1);
+  const deletedUser = todos.splice(index, 1);
 
   res.json({
     msg: `Deleted user with ID ${specificIdforDel}`,
     deleted: deletedUser[0],
-    users,
+    todos,
   });
 });
 
