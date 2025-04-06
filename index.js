@@ -2,9 +2,8 @@
 //mandatory codes of express
 const express = require("express");
 const app = express();
-const port = 2000;
-
 app.use(express.json());
+const port = 1601;
 
 //states
 let counter = 0;
@@ -56,19 +55,40 @@ app.put("/", function (req, res) {
 //deleting todos
 app.delete("/", function (req, res) {
   if (users.length === 0) {
-    res.sendStatus(411).send("nothing to delete");
-  } else {
-    let newList = [];
-    for (let i = 0; i < users.length; i++) {
-      let removedlist = users.splice(users.length - 1, 1);
-      removedlist.push(newList);
-    }
-    newList = users;
-    res.json({
-      msg: "the list have been deleted",
+    return res.json({
+      msg: "Nothing to delete, the list is empty",
+    });
+  }
+
+  const specificIdforDel = req.body?.specificIdforDel;
+  console.log("Request Body:", req.body);
+
+  // Case 1: No ID provided — delete last user
+  if (!specificIdforDel) {
+    const removedUser = users.pop(); // remove last item
+    return res.json({
+      msg: "Deleted last user",
+      removed: removedUser,
       users,
     });
   }
+
+  // Case 2: ID provided — handle specific delete
+  const index = users.findIndex((user) => user.id === specificIdforDel);
+
+  if (index === -1) {
+    return res.json({
+      msg: "User with provided ID not found",
+    });
+  }
+
+  const deletedUser = users.splice(index, 1);
+
+  res.json({
+    msg: `Deleted user with ID ${specificIdforDel}`,
+    deleted: deletedUser[0],
+    users,
+  });
 });
 
 //the app is running on the give port
