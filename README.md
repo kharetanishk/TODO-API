@@ -10,3 +10,7 @@ Update a specific todo
 Delete a specific or last todo
 
 Middleware handling & validation
+
+Session handling using jwt authenticated cookies and local storage session handling for user navigation throughout the application
+
+database is nosql type 
